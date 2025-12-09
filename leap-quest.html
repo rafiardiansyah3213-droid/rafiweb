@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Leap Quest - Versi Kamu</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: black;
+    }
+    canvas {
+      background: linear-gradient(#7dd3fc, #dcfce7);
+      display: block;
+      margin: auto;
+    }
+  </style>
+</head>
+<body>
+
+
+  <button id="backBtn">← Kembali</button>
+
+<canvas id="game" width="960" height="540"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let score = 0;
+
+// PLAYER
+const player = {
+  x: 100,
+  y: 380,
+  w: 40,
+  h: 60,
+  vy: 0,
+  jump: false
+};
+
+// GROUND
+const ground = 440;
+
+// OBSTACLE (SLIME)
+const slime = {
+  x: 700,
+  y: 390,
+  w: 50,
+  h: 50,
+  speed: 4
+};
+
+// COIN
+const coin = {
+  x: 500,
+  y: 300,
+  r: 10
+};
+
+// INPUT
+document.addEventListener("keydown", e => {
+  if (e.code === "Space" && !player.jump) {
+    player.vy = -18;
+    player.jump = true;
+  }
+});
+
+// GAME LOOP
+function update() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // GRAVITY
+  player.vy += 1;
+  player.y += player.vy;
+
+  if (player.y >= ground - player.h) {
+    player.y = ground - player.h;
+    player.vy = 0;
+    player.jump = false;
+  }
+
+  // SLIME MOVE
+  slime.x -= slime.speed;
+  if (slime.x < -50) slime.x = 1000;
+
+  // COLLISION SLIME
+  if (
+    player.x < slime.x + slime.w &&
+    player.x + player.w > slime.x &&
+    player.y < slime.y + slime.h &&
+    player.y + player.h > slime.y
+  ) {
+    alert("GAME OVER\nScore: " + score);
+    score = 0;
+    slime.x = 700;
+  }
+
+  // COIN COLLISION
+  const dx = player.x - coin.x;
+  const dy = player.y - coin.y;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+
+  if (dist < 30) {
+    score++;
+    coin.x = Math.random() * 800 + 100;
+    coin.y = Math.random() * 200 + 200;
+  }
+
+  draw();
+  requestAnimationFrame(update);
+}
+
+// DRAW
+function draw() {
+  // GROUND
+  ctx.fillStyle = "#166534";
+  ctx.fillRect(0, ground, canvas.width, 100);
+
+  // PLAYER
+  ctx.fillStyle = "#1d4ed8";
+  ctx.fillRect(player.x, player.y, player.w, player.h);
+
+  // SLIME
+  ctx.fillStyle = "#22c55e";
+  ctx.fillRect(slime.x, slime.y, slime.w, slime.h);
+
+  // COIN
+  ctx.fillStyle = "gold";
+  ctx.beginPath();
+  ctx.arc(coin.x, coin.y, coin.r, 0, Math.PI*2);
+  ctx.fill();
+
+  // SCORE
+  ctx.fillStyle = "black";
+  ctx.font = "20px Arial";
+  ctx.fillText("Score: " + score, 20, 30);
+}
+
+// START
+update();
+</script>
+
+<script src="script.js"></script>
+
+</body>
+</html>
